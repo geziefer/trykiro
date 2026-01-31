@@ -449,12 +449,14 @@ def tetromino():
     )
 
 
-@st.composite
-def game_state_with_active_tetromino(draw):
+def game_state_with_active_tetromino():
     """Strategy for generating game states with an active tetromino."""
-    game_state = GameState()
-    game_state.spawn_tetromino()
-    return game_state
+    def create_game_state():
+        game_state = GameState()
+        game_state.spawn_tetromino()
+        return game_state
+    
+    return st.builds(create_game_state)
 
 
 @st.composite

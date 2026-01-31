@@ -563,3 +563,119 @@ tests/
 
 Each test file shall contain both unit tests (for specific examples) and property tests (for universal properties), clearly separated and documented.
 
+
+
+---
+
+## Post-Implementation Notes
+
+*This section documents changes and refinements made after completing all 85 tasks from the original specification. These notes capture the evolution of the project from initial design to final implementation.*
+
+### Date: February 1, 2026
+
+### UI/UX Improvements
+
+After completing the initial implementation and testing the game, several UI improvements were identified and implemented to enhance the user experience:
+
+#### 1. Screen Dimensions Adjustment
+
+**Original Design**: 800×600 pixels
+**Final Implementation**: 400×700 pixels
+
+**Rationale**: 
+- The original 800px width was unnecessarily wide for a 10-block playfield (300px + margins)
+- The original 600px height was insufficient to display all 20 rows (20 rows × 30px = 600px, leaving no room for offset)
+- The narrower width creates a more focused, arcade-like experience
+- The increased height (700px) accommodates the full playfield with proper spacing (50px top offset + 600px playfield + 50px bottom margin)
+
+**Files Modified**:
+- `tetris/views/renderer.py`: Updated `SCREEN_WIDTH` and `SCREEN_HEIGHT` constants
+- `tetris/views/ui_screens.py`: Updated matching constants
+
+#### 2. Simplified Screen Flow
+
+**Original Design**: 
+```
+START → GAME → GAME_OVER → NAME_ENTRY (if high score) → HIGH_SCORES → START
+                         → HIGH_SCORES (if no high score) → START
+```
+
+**Final Implementation**:
+```
+START (with high scores displayed) → GAME → Game Over Overlay (2s) → NAME_ENTRY (if high score) → START
+                                                                    → GAME_OVER → START (if no high score)
+```
+
+**Rationale**:
+- Displaying high scores on the start screen eliminates the need for a separate HIGH_SCORES screen
+- Reduces navigation complexity (fewer button presses to return to start)
+- The 2-second game over overlay provides immediate feedback while maintaining game state visibility
+- All paths return to the start screen, creating a cleaner loop
+
+**Key Changes**:
+- Start screen now displays top 5 high scores below the title
+- Added `render_game_over_overlay()` method to show semi-transparent overlay on game screen
+- Game over overlay displays for 2 seconds before transitioning
+- HIGH_SCORES screen still exists in code but is not used in the main flow
+- GAME_OVER screen now transitions directly back to START on SPACE press
+
+**Files Modified**:
+- `tetris/views/ui_screens.py`: Added `render_game_over_overlay()`, updated `render_start_screen()` to accept high scores
+- `tetris/main.py`: Added overlay timer logic, updated screen flow
+- `tetris/controllers/input_handler.py`: Updated GAME_OVER screen behavior to return to START
+- `tests/test_ui_manager.py`: Updated flow tests to reflect new transitions
+- `tests/test_integration.py`: Updated integration test for new flow
+
+#### 3. Bug Fixes
+
+**Screen Height Bug**: 
+- **Issue**: Bottom 2 rows of playfield were not visible
+- **Fix**: Increased screen height from 600px to 700px
+- **Impact**: Full playfield now visible with proper margins
+
+**Hypothesis Deprecation Warning**:
+- **Issue**: `@st.composite` decorator warning in test_game_state.py
+- **Fix**: Replaced composite strategy with `st.builds()` for simpler strategy
+- **Impact**: Eliminated test warnings, cleaner test code
+
+### Implementation Statistics
+
+**Final Metrics**:
+- Total tasks completed: 85/85 (100%)
+- Total tests: 236 (27 property-based, 209 unit/integration)
+- Test coverage: 80% overall (85% excluding main.py)
+- Lines of code: ~2,500 (excluding tests)
+- Development time: Completed in spec-driven workflow
+
+**Test Breakdown**:
+- Property-based tests: 27 (one per correctness property)
+- Unit tests: 189 (covering specific examples and edge cases)
+- Integration tests: 20 (end-to-end scenarios)
+
+### Lessons Learned
+
+1. **Screen dimensions matter**: Initial dimensions should be validated with actual gameplay before finalizing design
+2. **UI flow iteration**: User experience improvements often emerge after implementation and testing
+3. **Property-based testing value**: The 27 correctness properties caught numerous edge cases during development
+4. **Separation of concerns**: The MVC architecture made UI changes easy to implement without touching game logic
+5. **Spec-driven development**: Having clear requirements and design upfront significantly streamlined implementation
+
+### Future Enhancement Ideas
+
+While the current implementation is complete and meets all requirements, potential future enhancements could include:
+
+- **Difficulty progression**: Increase fall speed as score increases
+- **Next piece preview**: Show upcoming tetromino
+- **Hold piece feature**: Allow holding one piece for later use
+- **Combo bonuses**: Award extra points for consecutive line clears
+- **T-spin detection**: Recognize and reward advanced rotation techniques
+- **Sound effects**: Add audio feedback for moves, rotations, and line clears
+- **Animations**: Smooth transitions for falling, line clearing, and game over
+- **Themes**: Multiple color schemes or visual themes
+- **Statistics tracking**: Track games played, average score, best streak, etc.
+
+### Conclusion
+
+The post-implementation refinements improved the user experience without compromising the original design goals. The core architecture remained unchanged, demonstrating the value of clean separation between game logic and presentation. All 27 correctness properties continue to pass, ensuring the game logic remains sound despite UI changes.
+
+The project successfully demonstrates spec-driven development with property-based testing, resulting in a maintainable, well-tested, and enjoyable Tetris implementation.

@@ -16,8 +16,8 @@ if TYPE_CHECKING:
 
 
 # Screen dimensions
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 400  # Narrowed to fit playfield (10 blocks * 30px + margins)
+SCREEN_HEIGHT = 700  # Increased to accommodate full playfield (50px offset + 20 rows * 30px + margin)
 
 # Block size (each grid cell is 30x30 pixels)
 BLOCK_SIZE = 30

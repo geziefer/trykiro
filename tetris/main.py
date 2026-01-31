@@ -52,17 +52,39 @@ def main() -> int:
     input_handler = InputHandler()
     high_score_manager = HighScoreManager()
     
+    # Game over overlay state
+    game_over_overlay_timer = 0.0
+    game_over_overlay_duration = 2.0  # Show overlay for 2 seconds
+    showing_game_over_overlay = False
+    
     # Main game loop
     running = True
     while running:
         # 1. Calculate delta time (convert milliseconds to seconds)
         delta_time = clock.tick(60) / 1000.0  # 60 FPS
         
-        # 2. Handle events
+        # 2. Handle game over overlay timer
+        if showing_game_over_overlay:
+            game_over_overlay_timer += delta_time
+            if game_over_overlay_timer >= game_over_overlay_duration:
+                # Overlay time is up - transition to next screen
+                showing_game_over_overlay = False
+                game_over_overlay_timer = 0.0
+                
+                if high_score_manager.is_high_score(game_state.score):
+                    ui_manager.transition_to(Screen.NAME_ENTRY)
+                else:
+                    ui_manager.transition_to(Screen.GAME_OVER)
+        
+        # 3. Handle events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
                 break
+            
+            # Skip input during game over overlay
+            if showing_game_over_overlay:
+                continue
             
             # Route events based on current screen
             if ui_manager.current_screen == Screen.GAME:
@@ -80,33 +102,32 @@ def main() -> int:
                             game_state.score
                         )
                         high_score_manager.save()
-                    # Transition to high scores screen
-                    ui_manager.transition_to(Screen.HIGH_SCORES)
+                    # Go back to start screen (which shows high scores)
+                    ui_manager.transition_to(Screen.START)
             
             else:
                 # In menu screens, handle menu input
                 input_handler.handle_menu_input(event, ui_manager, game_state)
         
-        # 3. Update game state (only during active gameplay)
+        # 4. Update game state (only during active gameplay)
         if ui_manager.current_screen == Screen.GAME and not game_state.game_over:
             game_state.update(delta_time)
         
-        # 4. Check for game over transition
-        if ui_manager.current_screen == Screen.GAME and game_state.game_over:
-            # Game just ended - transition to appropriate screen
-            if high_score_manager.is_high_score(game_state.score):
-                # Score qualifies for high score list - go to name entry
-                ui_manager.transition_to(Screen.NAME_ENTRY)
-            else:
-                # Score doesn't qualify - go directly to game over screen
-                ui_manager.transition_to(Screen.GAME_OVER)
+        # 5. Check for game over transition
+        if ui_manager.current_screen == Screen.GAME and game_state.game_over and not showing_game_over_overlay:
+            # Game just ended - start showing overlay
+            showing_game_over_overlay = True
+            game_over_overlay_timer = 0.0
         
-        # 5. Render current screen
+        # 6. Render current screen
         if ui_manager.current_screen == Screen.START:
-            ui_manager.render_start_screen()
+            ui_manager.render_start_screen(high_score_manager.get_top_scores())
         
         elif ui_manager.current_screen == Screen.GAME:
             renderer.render_game(game_state)
+            # Show game over overlay if active
+            if showing_game_over_overlay:
+                ui_manager.render_game_over_overlay(game_state.score)
         
         elif ui_manager.current_screen == Screen.GAME_OVER:
             ui_manager.render_game_over_screen(game_state.score)
@@ -114,10 +135,9 @@ def main() -> int:
         elif ui_manager.current_screen == Screen.NAME_ENTRY:
             ui_manager.render_name_entry_screen(game_state.score)
         
-        elif ui_manager.current_screen == Screen.HIGH_SCORES:
-            ui_manager.render_high_scores_screen(high_score_manager.get_top_scores())
+        # Note: HIGH_SCORES screen is not used - start screen shows high scores instead
         
-        # 6. Update display
+        # 7. Update display
         pygame.display.flip()
     
     # Cleanup

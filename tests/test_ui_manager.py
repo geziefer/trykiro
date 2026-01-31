@@ -199,7 +199,7 @@ def test_handle_name_entry_input_ignores_non_printable_characters(ui_manager):
 
 
 def test_complete_screen_flow(ui_manager):
-    """Test complete screen flow from start to high scores."""
+    """Test complete screen flow from start through name entry back to start."""
     # Start at START screen
     assert ui_manager.current_screen == Screen.START
     
@@ -216,9 +216,9 @@ def test_complete_screen_flow(ui_manager):
     assert ui_manager.current_screen == Screen.NAME_ENTRY
     assert ui_manager.player_name == ""  # Reset on transition
     
-    # Transition to HIGH_SCORES
-    ui_manager.transition_to(Screen.HIGH_SCORES)
-    assert ui_manager.current_screen == Screen.HIGH_SCORES
+    # Transition back to START (after name entry)
+    ui_manager.transition_to(Screen.START)
+    assert ui_manager.current_screen == Screen.START
 
 
 def test_screen_flow_without_high_score(ui_manager):
@@ -234,9 +234,9 @@ def test_screen_flow_without_high_score(ui_manager):
     ui_manager.transition_to(Screen.GAME_OVER)
     assert ui_manager.current_screen == Screen.GAME_OVER
     
-    # Transition directly to HIGH_SCORES (skip NAME_ENTRY)
-    ui_manager.transition_to(Screen.HIGH_SCORES)
-    assert ui_manager.current_screen == Screen.HIGH_SCORES
+    # Transition back to START (skip NAME_ENTRY when no high score)
+    ui_manager.transition_to(Screen.START)
+    assert ui_manager.current_screen == Screen.START
 
 
 def test_draw_text_helper_method(ui_manager, mock_screen):

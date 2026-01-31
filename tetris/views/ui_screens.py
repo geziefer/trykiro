@@ -15,8 +15,8 @@ if TYPE_CHECKING:
 
 
 # Screen dimensions (must match renderer)
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 400  # Narrowed to fit playfield
+SCREEN_HEIGHT = 700  # Increased to accommodate full playfield
 
 # Color constants
 WHITE = (255, 255, 255)
@@ -102,10 +102,13 @@ class UIManager:
         
         self.screen.blit(text_surface, text_rect)
     
-    def render_start_screen(self) -> None:
+    def render_start_screen(self, high_scores: Optional[List['HighScoreEntry']] = None) -> None:
         """Render the start screen.
         
-        Displays the game title and instructions to start.
+        Displays the game title, instructions to start, and high scores.
+        
+        Args:
+            high_scores: Optional list of high score entries to display
         """
         # Clear screen
         self.screen.fill(BACKGROUND_COLOR)
@@ -116,7 +119,7 @@ class UIManager:
             self.title_font,
             TEXT_COLOR,
             SCREEN_WIDTH // 2,
-            SCREEN_HEIGHT // 3,
+            60,
             center=True
         )
         
@@ -126,9 +129,52 @@ class UIManager:
             self.text_font,
             HIGHLIGHT_COLOR,
             SCREEN_WIDTH // 2,
-            SCREEN_HEIGHT // 2,
+            140,
             center=True
         )
+        
+        # Draw high scores if available
+        if high_scores:
+            # Draw "High Scores" subtitle
+            self.draw_text(
+                "High Scores",
+                self.score_font,
+                TEXT_COLOR,
+                SCREEN_WIDTH // 2,
+                200,
+                center=True
+            )
+            
+            # Draw top 5 scores
+            start_y = 260
+            line_height = 35
+            small_font = pygame.font.Font(None, 28)
+            
+            for i, entry in enumerate(high_scores[:5]):  # Top 5 only
+                rank = f"{i + 1}."
+                name = entry.name[:10]  # Limit name length
+                score = str(entry.score)
+                
+                # Draw rank and name (left-aligned)
+                rank_name = f"{rank:2} {name}"
+                self.draw_text(
+                    rank_name,
+                    small_font,
+                    TEXT_COLOR,
+                    SCREEN_WIDTH // 2 - 80,
+                    start_y + i * line_height,
+                    center=False
+                )
+                
+                # Draw score (right-aligned)
+                self.draw_text(
+                    score,
+                    small_font,
+                    HIGHLIGHT_COLOR,
+                    SCREEN_WIDTH // 2 + 80,
+                    start_y + i * line_height,
+                    center=False
+                )
     
     def render_game_over_screen(self, final_score: int) -> None:
         """Render the game over screen.
@@ -260,6 +306,7 @@ class UIManager:
         # Draw high scores list
         start_y = 180
         line_height = 35
+        small_font = pygame.font.Font(None, 28)
         
         if not high_scores:
             # No high scores yet
@@ -275,16 +322,16 @@ class UIManager:
             for i, entry in enumerate(high_scores[:10]):  # Top 10 only
                 # Format: "1. ALICE .......... 1000"
                 rank = f"{i + 1}."
-                name = entry.name[:15]  # Limit name length
+                name = entry.name[:10]  # Limit name length
                 score = str(entry.score)
                 
                 # Draw rank and name (left-aligned)
                 rank_name = f"{rank:3} {name}"
                 self.draw_text(
                     rank_name,
-                    self.text_font,
+                    small_font,
                     TEXT_COLOR,
-                    SCREEN_WIDTH // 2 - 150,
+                    SCREEN_WIDTH // 2 - 80,
                     start_y + i * line_height,
                     center=False
                 )
@@ -292,9 +339,9 @@ class UIManager:
                 # Draw score (right-aligned)
                 self.draw_text(
                     score,
-                    self.text_font,
+                    small_font,
                     HIGHLIGHT_COLOR,
-                    SCREEN_WIDTH // 2 + 150,
+                    SCREEN_WIDTH // 2 + 80,
                     start_y + i * line_height,
                     center=False
                 )
@@ -306,6 +353,42 @@ class UIManager:
             GRAY,
             SCREEN_WIDTH // 2,
             SCREEN_HEIGHT - 60,
+            center=True
+        )
+    
+    def render_game_over_overlay(self, score: int) -> None:
+        """Render a game over overlay on top of the current game screen.
+        
+        This creates a semi-transparent overlay with "GAME OVER" message.
+        Should be called after rendering the game screen.
+        
+        Args:
+            score: The final score to display
+        """
+        # Create semi-transparent overlay
+        overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        overlay.set_alpha(200)  # Semi-transparent
+        overlay.fill((0, 0, 0))
+        self.screen.blit(overlay, (0, 0))
+        
+        # Draw "GAME OVER" message
+        self.draw_text(
+            "GAME OVER",
+            self.title_font,
+            (255, 0, 0),  # Red
+            SCREEN_WIDTH // 2,
+            SCREEN_HEIGHT // 2 - 50,
+            center=True
+        )
+        
+        # Draw final score
+        score_text = f"Score: {score}"
+        self.draw_text(
+            score_text,
+            self.score_font,
+            HIGHLIGHT_COLOR,
+            SCREEN_WIDTH // 2,
+            SCREEN_HEIGHT // 2 + 30,
             center=True
         )
     

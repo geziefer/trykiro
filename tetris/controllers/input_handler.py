@@ -64,7 +64,7 @@ class InputHandler:
         
         Handles navigation and actions in non-gameplay screens:
         - START screen: SPACE starts the game
-        - GAME_OVER screen: SPACE continues to high scores or name entry
+        - GAME_OVER screen: SPACE returns to start screen
         - HIGH_SCORES screen: SPACE returns to start screen
         
         Args:
@@ -86,9 +86,8 @@ class InputHandler:
                 ui_manager.transition_to(Screen.GAME)
             
             elif ui_manager.current_screen == Screen.GAME_OVER:
-                # Continue to high scores or name entry
-                # (Caller should check if score qualifies for high score list)
-                pass
+                # Continue to start screen
+                ui_manager.transition_to(Screen.START)
             
             elif ui_manager.current_screen == Screen.HIGH_SCORES:
                 # Return to start screen

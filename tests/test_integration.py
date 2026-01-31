@@ -162,14 +162,7 @@ class TestCompleteGameFlow:
         ui_manager.transition_to(Screen.GAME_OVER)
         assert ui_manager.current_screen == Screen.GAME_OVER
         
-        # 6. Return to start screen
-        input_handler.handle_menu_input(event, ui_manager, game_state)
-        # Note: From GAME_OVER, SPACE doesn't automatically go to START
-        # It would need to go through high scores first
-        ui_manager.transition_to(Screen.HIGH_SCORES)
-        assert ui_manager.current_screen == Screen.HIGH_SCORES
-        
-        # 7. Return to start
+        # 6. Return to start screen (SPACE now goes directly to START)
         input_handler.handle_menu_input(event, ui_manager, game_state)
         assert ui_manager.current_screen == Screen.START
     
