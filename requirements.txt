@@ -1,0 +1,13 @@
+# Tetris Clone Dependencies
+
+# Graphics and game development
+pygame>=2.5.0
+
+# Property-based testing
+hypothesis>=6.82.0
+
+# Unit testing framework
+pytest>=7.4.0
+
+# Test coverage reporting
+pytest-cov>=4.1.0
